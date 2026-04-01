@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+coverage
+downloads
+jackett-config
+*.pem
+.env*
+.DS_Store

@@ -1,0 +1,93 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config.json:/app/config.json
+      - /mnt/e/PlexMedia:/media/plex:ro
+    depends_on:
+      - radarr
+      - sonarr
+      - prowlarr
+      - qbittorrent
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    ports:
+      - "7878:7878"
+    volumes:
+      - ./radarr-config:/config
+      - /mnt/e/PlexMedia:/media/plex
+      - /mnt/e/PlexMedia/downloads:/downloads
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    ports:
+      - "8989:8989"
+    volumes:
+      - ./sonarr-config:/config
+      - /mnt/e/PlexMedia:/media/plex
+      - /mnt/e/PlexMedia/downloads:/downloads
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    ports:
+      - "9696:9696"
+    volumes:
+      - ./prowlarr-config:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+    restart: unless-stopped
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    ports:
+      - "8080:8080"
+      - "16881:16881"
+      - "16881:16881/udp"
+    volumes:
+      - ./qbittorrent-config:/config
+      - /mnt/e/PlexMedia:/media/plex
+      - /mnt/e/PlexMedia/downloads:/downloads
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+      - WEBUI_PORT=8080
+    restart: unless-stopped
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    ports:
+      - "8096:8096"
+    volumes:
+      - ./jellyfin-config:/config
+      - ./jellyfin-cache:/cache
+      - /mnt/e/PlexMedia:/media/plex:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+    restart: unless-stopped
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    ports:
+      - "8191:8191"
+    environment:
+      - TZ=Europe/Rome
+    restart: unless-stopped
