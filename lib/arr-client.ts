@@ -20,7 +20,7 @@ export async function arrFetch(
   if (!svc.url || !svc.apiKey) throw new ArrConfigError(service)
 
   const apiVersion = service === 'prowlarr' ? 'v1' : 'v3'
-  const timeout = path.includes('lookup') || path.includes('release') ? 30000 : 15000
+  const timeout = path.includes('lookup') || path.includes('release') || path.includes('search') ? 30000 : 15000
 
   const res = await fetch(`${svc.url}/api/${apiVersion}${path}`, {
     ...init,

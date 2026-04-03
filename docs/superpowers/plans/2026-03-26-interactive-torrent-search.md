@@ -52,7 +52,7 @@ Then inside the `<body>` tag, after `<main>`:
 
 - [ ] **Step 2: Verify the app builds**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
 Expected: Build succeeds with no errors.
 
 - [ ] **Step 3: Commit**
@@ -87,7 +87,7 @@ const timeout = path.includes('lookup') || path.includes('release') ? 30000 : 15
 
 - [ ] **Step 2: Verify the app builds**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
 Expected: Build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -130,7 +130,7 @@ This follows the exact pattern used by `app/api/radarr/movie/route.ts`. The GET 
 
 - [ ] **Step 2: Verify the app builds**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
 Expected: Build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -173,7 +173,7 @@ Identical pattern to the Radarr release route but proxies to Sonarr. GET passes 
 
 - [ ] **Step 2: Verify the app builds**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
 Expected: Build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -363,7 +363,7 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
 
 - [ ] **Step 2: Verify the app builds**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
 Expected: Build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -540,7 +540,7 @@ export function EpisodeList({ seriesId }: EpisodeListProps) {
 
 - [ ] **Step 2: Verify the app builds**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
 Expected: Build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -764,7 +764,7 @@ async function addToLibrary(item: LookupResult): Promise<number> {
 
 - [ ] **Step 2: Verify the app builds**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
 Expected: Build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -909,7 +909,7 @@ Key changes from the original:
 
 - [ ] **Step 2: Verify the app builds**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && npx next build 2>&1 | tail -20`
 Expected: Build succeeds.
 
 - [ ] **Step 3: Commit**
@@ -929,7 +929,7 @@ Verify the full flow works end-to-end with the running Docker stack.
 
 - [ ] **Step 1: Rebuild and start the app**
 
-Run: `cd /home/frangallo/feed-my-plex/.worktrees/arr-remodel && docker compose up -d --build`
+Run: `cd /home/frangallo/feed-my-potato/.worktrees/arr-remodel && docker compose up -d --build`
 Expected: All services start successfully.
 
 - [ ] **Step 2: Test movie search and torrent selection**

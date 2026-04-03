@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Remodel FeedMyPlex from a Jackett-based torrent search interface into a unified ARR stack dashboard (Radarr, Sonarr, Prowlarr) using the API Gateway Puro pattern.
+**Goal:** Remodel FeedMyPotato from a Jackett-based torrent search interface into a unified ARR stack dashboard (Radarr, Sonarr, Prowlarr) using the API Gateway Puro pattern.
 
 **Architecture:** Next.js API routes act as thin proxies to ARR service REST APIs via a shared `arrFetch`/`arrProxy` layer. No business logic in the backend — just auth injection, request forwarding, and error normalization. qBittorrent integration retained as-is for download management.
 
@@ -1460,7 +1460,7 @@ export function Sidebar() {
   const pathname = usePathname()
   return (
     <aside className="w-56 flex-shrink-0 h-screen bg-gray-900 flex flex-col p-4 gap-2 border-r border-gray-800">
-      <div className="text-purple-400 font-bold text-lg mb-6">FeedMyPlex</div>
+      <div className="text-purple-400 font-bold text-lg mb-6">FeedMyPotato</div>
       {links.map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname.startsWith(href)
         return (

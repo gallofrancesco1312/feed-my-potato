@@ -5,7 +5,7 @@
 
 ## Overview
 
-Three feature sets to enhance the feed-my-plex application:
+Three feature sets to enhance the feed-my-potato application:
 1. Remove missing movies/series from library
 2. Dashboard overhaul with charts and disk space widget
 3. Download page improvements with extended data and complete Italian status labels

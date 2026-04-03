@@ -1,12 +1,12 @@
-# FeedMyPlex ARR Stack Remodel — Design Spec
+# FeedMyPotato ARR Stack Remodel — Design Spec
 
 ## Overview
 
-Ricostruzione di FeedMyPlex attorno allo stack ARR (Radarr, Sonarr, Prowlarr), trasformandola da interfaccia manuale di ricerca/download a **dashboard unificata** che aggrega e controlla i servizi ARR da un unico pannello.
+Ricostruzione di FeedMyPotato attorno allo stack ARR (Radarr, Sonarr, Prowlarr), trasformandola da interfaccia manuale di ricerca/download a **dashboard unificata** che aggrega e controlla i servizi ARR da un unico pannello.
 
 ### Approccio scelto: API Gateway Puro
 
-FeedMyPlex diventa un thin client che parla esclusivamente con le API REST di Sonarr, Radarr, Prowlarr e qBittorrent. Le API routes di Next.js fanno solo proxy e aggregazione — nessuna logica di business nel backend.
+FeedMyPotato diventa un thin client che parla esclusivamente con le API REST di Sonarr, Radarr, Prowlarr e qBittorrent. Le API routes di Next.js fanno solo proxy e aggregazione — nessuna logica di business nel backend.
 
 ### Cosa cambia
 
@@ -19,7 +19,7 @@ FeedMyPlex diventa un thin client che parla esclusivamente con le API REST di So
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│              FeedMyPlex (Next.js 15)                │
+│              FeedMyPotato (Next.js 15)                │
 │                                                     │
 │  ┌─────────────────────────────────────────────┐   │
 │  │  Frontend (React)                           │   │
@@ -144,7 +144,7 @@ Gestione Prowlarr:
 
 Configurazione e salute:
 - **Stato servizi:** ping + versione di Radarr, Sonarr, Prowlarr, qBittorrent
-- **Configurazione FeedMyPlex:** URL e API key per ogni servizio (estensione della pagina Settings attuale ai 4 servizi)
+- **Configurazione FeedMyPotato:** URL e API key per ogni servizio (estensione della pagina Settings attuale ai 4 servizi)
 - **Test connettività:** verifica raggiungibilità di ogni servizio
 - **Info disco:** spazio disponibile nelle root folder
 

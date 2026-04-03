@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useCallback } from 'react'
 import {
   LayoutDashboard,
   Search,
@@ -11,6 +12,7 @@ import {
   Clock,
   Globe,
   Settings,
+  X,
 } from 'lucide-react'
 
 const links = [
@@ -28,24 +30,64 @@ const bottomLinks = [
   { href: '/system', label: 'Sistema', icon: Settings },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen: boolean
+  onClose: () => void
+}
+
+export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
-  return (
-    <aside className="w-60 flex-shrink-0 h-screen flex flex-col border-r border-white/[0.06] bg-[oklch(0.13_0.02_280)]">
+
+  // Close drawer on route change (mobile)
+  useEffect(() => {
+    onClose()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [mobileOpen])
+
+  // Close on Escape
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose()
+  }, [onClose])
+
+  useEffect(() => {
+    if (mobileOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [mobileOpen, handleKeyDown])
+
+  const nav = (
+    <>
       {/* Logo */}
-      <div className="px-5 pt-6 pb-8">
+      <div className="px-5 pt-6 pb-8 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center shadow-lg shadow-violet-500/20">
             <Film size={16} className="text-white" />
           </div>
           <span className="font-bold text-lg tracking-tight text-white">
-            Feed<span className="text-violet-400">My</span>Plex
+            Feed<span className="text-violet-400">My</span>Potato
           </span>
         </Link>
+        {/* Close button – mobile only */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 -mr-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
+          aria-label="Chiudi menu"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 space-y-1">
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
         <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
           Menu
         </p>
@@ -91,6 +133,39 @@ export function Sidebar() {
           )
         })}
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* ── Desktop sidebar (lg+): always visible ── */}
+      <aside className="hidden lg:flex w-60 flex-shrink-0 h-screen flex-col border-r border-white/[0.06] bg-[oklch(0.13_0.02_280)]">
+        {nav}
+      </aside>
+
+      {/* ── Mobile drawer (<lg): overlay + slide-in ── */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden transition-visibility ${
+          mobileOpen ? 'visible' : 'invisible'
+        }`}
+        aria-hidden={!mobileOpen}
+      >
+        {/* Backdrop */}
+        <div
+          className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+            mobileOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={onClose}
+        />
+        {/* Drawer panel */}
+        <aside
+          className={`absolute left-0 top-0 h-full w-72 flex flex-col bg-[oklch(0.13_0.02_280)] border-r border-white/[0.06] shadow-2xl shadow-black/40 transition-transform duration-300 ease-out ${
+            mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {nav}
+        </aside>
+      </div>
+    </>
   )
 }

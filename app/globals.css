@@ -187,4 +187,10 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  .transition-visibility {
+    transition: visibility 0s linear 300ms;
+  }
+  .transition-visibility.visible {
+    transition-delay: 0s;
+  }
 }

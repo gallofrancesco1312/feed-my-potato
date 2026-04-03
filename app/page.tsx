@@ -22,7 +22,10 @@ interface CalendarItem {
 interface DownloadItem {
   name: string
   progress: number
+  state: string
 }
+
+const SEEDING_STATES = new Set(['uploading', 'stalledUP', 'forcedUP', 'queuedUP'])
 
 interface Movie {
   hasFile: boolean
@@ -115,9 +118,10 @@ export default function DashboardPage() {
     es.onmessage = e => {
       const data = JSON.parse(e.data)
       if (Array.isArray(data)) {
-        setDownloads(data.map((t: { name: string; progress: number }) => ({
+        setDownloads(data.map((t: { name: string; progress: number; state: string }) => ({
           name: t.name,
           progress: t.progress,
+          state: t.state,
         })))
       }
     }
@@ -130,6 +134,8 @@ export default function DashboardPage() {
   const seriesFullyDownloaded = series.filter(s => s.statistics?.episodeFileCount === s.statistics?.episodeCount && (s.statistics?.episodeCount ?? 0) > 0).length
   const seriesMissing = series.filter(s => s.monitored && (s.statistics?.episodeFileCount ?? 0) < (s.statistics?.episodeCount ?? 0)).length
   const seriesUnmonitored = series.filter(s => !s.monitored).length
+
+  const activeDownloads = downloads.filter(d => !SEEDING_STATES.has(d.state))
 
   const totalDownloaded = movieDownloaded + seriesFullyDownloaded
   const totalMissing = movieMissing + seriesMissing
@@ -172,7 +178,7 @@ export default function DashboardPage() {
         <StatCard
           icon={ArrowDownToLine}
           label="Download"
-          value={downloads.length}
+          value={activeDownloads.length}
           gradient="from-violet-500/20 to-violet-600/5"
           iconColor="text-violet-400"
           borderColor="border-violet-500/20"
@@ -253,14 +259,14 @@ export default function DashboardPage() {
           )}
 
           {/* Active downloads */}
-          {downloads.length > 0 && (
+          {activeDownloads.length > 0 && (
             <div className="glass-card rounded-xl p-5">
               <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Download size={14} className="text-slate-500" />
                 Download Attivi
               </h3>
               <div className="space-y-4">
-                {downloads.map((d, i) => {
+                {activeDownloads.map((d, i) => {
                   const pct = Math.round(d.progress * 100)
                   return (
                     <div key={i}>

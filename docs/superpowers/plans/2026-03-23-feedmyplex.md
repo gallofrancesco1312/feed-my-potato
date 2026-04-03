@@ -1,4 +1,4 @@
-# FeedMyPlex Implementation Plan
+# FeedMyPotato Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -53,7 +53,7 @@
 - [ ] **Step 1: Scaffold Next.js project**
 
 ```bash
-cd /home/frangallo/feed-my-plex
+cd /home/frangallo/feed-my-potato
 npx create-next-app@latest . \
   --typescript \
   --tailwind \
@@ -116,7 +116,7 @@ import '@testing-library/jest-dom'
 Ensure `config.json` and `.superpowers/` are in `.gitignore`:
 
 ```
-# FeedMyPlex
+# FeedMyPotato
 config.json
 .superpowers/
 ```
@@ -1095,7 +1095,7 @@ export function Sidebar() {
   const pathname = usePathname()
   return (
     <aside className="w-56 flex-shrink-0 h-screen bg-gray-900 flex flex-col p-4 gap-2 border-r border-gray-800">
-      <div className="text-purple-400 font-bold text-lg mb-6">🎬 FeedMyPlex</div>
+      <div className="text-purple-400 font-bold text-lg mb-6">🎬 FeedMyPotato</div>
       {links.map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
@@ -1129,7 +1129,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Sidebar } from '@/components/Sidebar'
 
-export const metadata: Metadata = { title: 'FeedMyPlex' }
+export const metadata: Metadata = { title: 'FeedMyPotato' }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -1857,5 +1857,5 @@ Expected: Build completes without TypeScript errors.
 
 ```bash
 git add -A
-git commit -m "feat: complete FeedMyPlex app — all pages and API routes"
+git commit -m "feat: complete FeedMyPotato app — all pages and API routes"
 ```

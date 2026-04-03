@@ -1,11 +1,11 @@
-# FeedMyPlex — Design Spec
+# FeedMyPotato — Design Spec
 
 **Date:** 2026-03-23
 **Status:** Approved
 
 ## Overview
 
-FeedMyPlex is a self-hosted web application that lets a user search for torrents via Jackett (multi-provider aggregator), send them to qBittorrent for download into a Plex-linked folder, and manage the resulting video files through a clean UI. Non-video files are cleaned up automatically after each download completes.
+FeedMyPotato is a self-hosted web application that lets a user search for torrents via Jackett (multi-provider aggregator), send them to qBittorrent for download into a Plex-linked folder, and manage the resulting video files through a clean UI. Non-video files are cleaned up automatically after each download completes.
 
 ---
 
@@ -157,7 +157,7 @@ The cleanup is idempotent — if the Plex folder already contains a file with th
 ## File Structure
 
 ```
-feed-my-plex/
+feed-my-potato/
 ├── app/
 │   ├── layout.tsx          # Root layout with sidebar
 │   ├── page.tsx            # Redirect to /search

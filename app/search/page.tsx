@@ -20,7 +20,7 @@ interface LookupResult {
   seasons?: { seasonNumber: number; monitored?: boolean }[]
 }
 
-const RECENT_SEARCHES_KEY = 'feed-my-plex-recent-searches'
+const RECENT_SEARCHES_KEY = 'feed-my-potato-recent-searches'
 const MAX_RECENT = 8
 
 function loadRecentSearches(): string[] {

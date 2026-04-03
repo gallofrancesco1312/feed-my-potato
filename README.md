@@ -1,4 +1,4 @@
-# FeedMyPlex
+# FeedMyPotato
 
 Web app per cercare, scaricare e gestire contenuti multimediali direttamente nella tua libreria Plex — tutto da un'unica interfaccia.
 
@@ -11,11 +11,11 @@ Web app per cercare, scaricare e gestire contenuti multimediali direttamente nel
 ## Come funziona
 
 ```
-Browser → FeedMyPlex (Next.js) → Jackett → Torrent indexers
+Browser → FeedMyPotato (Next.js) → Jackett → Torrent indexers
                                 → qBittorrent → /media/plex ← Plex
 ```
 
-1. Cerchi un film o serie su FeedMyPlex
+1. Cerchi un film o serie su FeedMyPotato
 2. Jackett interroga tutti gli indexer configurati e restituisce i risultati ordinati per seed
 3. Scegli il torrent e lo invii direttamente a qBittorrent
 4. Il download viene salvato nella cartella Plex — Plex lo rileva automaticamente
@@ -43,8 +43,8 @@ Browser → FeedMyPlex (Next.js) → Jackett → Torrent indexers
 ### 1. Clona il repo
 
 ```bash
-git clone https://github.com/gallofrancesco1312/feed-my-plex.git
-cd feed-my-plex
+git clone https://github.com/gallofrancesco1312/feed-my-potato.git
+cd feed-my-potato
 ```
 
 ### 2. Crea il file di configurazione
@@ -86,16 +86,16 @@ docker compose up -d
 1. Apri [http://localhost:9117](http://localhost:9117)
 2. Aggiungi gli indexer che vuoi usare
 3. Copia la **API Key** dalla dashboard
-4. Incollala in FeedMyPlex → **Impostazioni**
+4. Incollala in FeedMyPotato → **Impostazioni**
 
 ### 6. Configura qBittorrent
 
 1. Apri [http://localhost:8080](http://localhost:8080) (credenziali default: `admin` / password generata al primo avvio — vedi log del container)
 2. Cambia la password nelle impostazioni di qBittorrent
-3. Inserisci le credenziali in FeedMyPlex → **Impostazioni**
+3. Inserisci le credenziali in FeedMyPotato → **Impostazioni**
 4. Imposta la cartella di download su `/media/plex`
 
-### 7. Apri FeedMyPlex
+### 7. Apri FeedMyPotato
 
 [http://localhost:3000](http://localhost:3000)
 
@@ -151,7 +151,7 @@ npm test
 ## Struttura del progetto
 
 ```
-feed-my-plex/
+feed-my-potato/
 ├── app/
 │   ├── api/          # Route handler Next.js
 │   ├── search/       # Pagina ricerca
@@ -170,7 +170,7 @@ feed-my-plex/
 
 | Servizio | Porta |
 |---|---|
-| FeedMyPlex | `3000` |
+| FeedMyPotato | `3000` |
 | qBittorrent WebUI | `8080` |
 | Jackett | `9117` |
 | FlareSolverr | `8191` |
