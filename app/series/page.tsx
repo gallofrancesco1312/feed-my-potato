@@ -31,12 +31,19 @@ export default function SeriesPage() {
   const [deleteFiles, setDeleteFiles] = useState(true)
 
   useEffect(() => {
-    fetch('/api/sonarr/series')
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) setSeries(data)
-      })
-      .finally(() => setLoading(false))
+    let cancelled = false
+    const fetchSeries = () =>
+      fetch('/api/sonarr/series')
+        .then(r => r.json())
+        .then(data => {
+          if (!cancelled && Array.isArray(data)) setSeries(data)
+        })
+        .finally(() => { if (!cancelled) setLoading(false) })
+
+    fetchSeries()
+    // Re-fetch every 30s to pick up newly imported series
+    const interval = setInterval(fetchSeries, 30_000)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
   const toggleExpand = async (id: number) => {

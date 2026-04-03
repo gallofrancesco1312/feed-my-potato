@@ -38,6 +38,16 @@ export function SearchResultCard({ item, isExpanded, onToggle }: SearchResultCar
   const [seasonReleases, setSeasonReleases] = useState<Release[]>([])
   const [loadingSeasonReleases, setLoadingSeasonReleases] = useState(false)
   const addedToLibrary = useRef(false)
+  const lastItemId = useRef<number | undefined>(undefined)
+
+  // Reset library flag when the item changes
+  useEffect(() => {
+    const id = item.type === 'movie' ? item.tmdbId : item.tvdbId
+    if (id !== lastItemId.current) {
+      addedToLibrary.current = false
+      lastItemId.current = id
+    }
+  }, [item.type, item.tmdbId, item.tvdbId])
 
   useEffect(() => {
     if (!isExpanded) {
@@ -103,16 +113,28 @@ export function SearchResultCard({ item, isExpanded, onToggle }: SearchResultCar
       try {
         await addToLibrary(item)
         addedToLibrary.current = true
-      } catch {
-        // Ignore library errors — proceed with download
+      } catch (err) {
+        toast.error(
+          `Impossibile aggiungere alla libreria: ${err instanceof Error ? err.message : 'errore sconosciuto'}`,
+        )
+        throw err
       }
     }
 
-    const category = item.type === 'movie' ? 'radarr' : 'sonarr'
-    const res = await fetch('/api/qbit/torrents/add', {
+    // Push release through Sonarr/Radarr so they manage the download lifecycle
+    const endpoint = item.type === 'movie'
+      ? '/api/radarr/release'
+      : '/api/sonarr/release/push'
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: release.downloadUrl, category }),
+      body: JSON.stringify({
+        title: release.title,
+        downloadUrl: release.downloadUrl,
+        protocol: 'torrent',
+        publishDate: new Date().toISOString(),
+        indexer: release.indexer,
+      }),
     })
     if (!res.ok) throw new Error('Download fallito')
   }
@@ -215,6 +237,7 @@ async function addToLibrary(item: LookupResult): Promise<void> {
       fetch('/api/radarr/qualityprofile').then(r => r.json()),
       fetch('/api/radarr/rootfolder').then(r => r.json()),
     ])
+    const rootPath = (Array.isArray(folders) && folders[0]?.path) || '/data/movies'
     const res = await fetch('/api/radarr/movie', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -222,7 +245,7 @@ async function addToLibrary(item: LookupResult): Promise<void> {
         tmdbId: item.tmdbId,
         title: item.title,
         qualityProfileId: profiles[0]?.id,
-        rootFolderPath: folders[0]?.path,
+        rootFolderPath: rootPath,
         monitored: true,
         addOptions: { searchForMovie: false },
       }),
@@ -237,6 +260,7 @@ async function addToLibrary(item: LookupResult): Promise<void> {
       fetch('/api/sonarr/qualityprofile').then(r => r.json()),
       fetch('/api/sonarr/rootfolder').then(r => r.json()),
     ])
+    const rootPath = (Array.isArray(folders) && folders[0]?.path) || '/data/series'
     const res = await fetch('/api/sonarr/series', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -244,7 +268,7 @@ async function addToLibrary(item: LookupResult): Promise<void> {
         tvdbId: item.tvdbId,
         title: item.title,
         qualityProfileId: profiles[0]?.id,
-        rootFolderPath: folders[0]?.path,
+        rootFolderPath: rootPath,
         monitored: true,
         addOptions: { searchForMissingEpisodes: false },
       }),

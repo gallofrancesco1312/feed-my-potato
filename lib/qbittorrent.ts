@@ -74,9 +74,10 @@ export class QBittorrentClient {
     })
   }
 
-  async addTorrentUrl(url: string, category?: string): Promise<void> {
+  async addTorrentUrl(url: string, category?: string, savePath?: string): Promise<void> {
     const body = new URLSearchParams({ urls: url })
     if (category) body.set('category', category)
+    if (savePath) body.set('savepath', savePath)
     await this.call('/api/v2/torrents/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

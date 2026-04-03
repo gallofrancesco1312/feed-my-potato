@@ -1,26 +1,77 @@
 services:
-  app:
-    build: .
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: feed-my-potato-gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
     ports:
-      - "3000:3000"
+      # qBittorrent WebUI
+      - "8080:8080"
+      # qBittorrent torrent traffic
+      - "16881:16881"
+      - "16881:16881/udp"
+      # Radarr
+      - "7878:7878"
+      # Sonarr
+      - "8989:8989"
+      # Prowlarr
+      - "9696:9696"
+      # FlareSolverr
+      - "8191:8191"
+    volumes:
+      - ./gluetun-config:/gluetun
+    environment:
+      - VPN_SERVICE_PROVIDER=nordvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${NORDVPN_PRIVATE_KEY}
+      - SERVER_COUNTRIES=Italy
+      - FIREWALL=on
+      - FIREWALL_VPN_INPUT_PORTS=16881
+      - TZ=Europe/Rome
+    restart: unless-stopped
+    networks:
+      - proxy
+      - default
+    healthcheck:
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  app:
+    image: forgejo.home.potato/ciccio/feed-my-potato:latest
+    container_name: feed-my-potato
     volumes:
       - ./config.json:/app/config.json
-      - /mnt/e/PlexMedia:/media/plex:ro
     depends_on:
       - radarr
       - sonarr
       - prowlarr
       - qbittorrent
     restart: unless-stopped
+    networks:
+      - proxy
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.feedmypotato.rule=Host(`feedmypotato.home.potato`)"
+      - "traefik.http.routers.feedmypotato.entrypoints=websecure"
+      - "traefik.http.routers.feedmypotato.tls=true"
+      - "traefik.http.services.feedmypotato.loadbalancer.server.port=3000"
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
-    ports:
-      - "7878:7878"
+    container_name: feed-my-potato-radarr
+    network_mode: service:gluetun
+    depends_on:
+      gluetun:
+        condition: service_healthy
     volumes:
       - ./radarr-config:/config
-      - /mnt/e/PlexMedia:/media/plex
-      - /mnt/e/PlexMedia/downloads:/downloads
+      - /mnt/data/media:/data
     environment:
       - PUID=1000
       - PGID=1000
@@ -29,12 +80,14 @@ services:
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
-    ports:
-      - "8989:8989"
+    container_name: feed-my-potato-sonarr
+    network_mode: service:gluetun
+    depends_on:
+      gluetun:
+        condition: service_healthy
     volumes:
       - ./sonarr-config:/config
-      - /mnt/e/PlexMedia:/media/plex
-      - /mnt/e/PlexMedia/downloads:/downloads
+      - /mnt/data/media:/data
     environment:
       - PUID=1000
       - PGID=1000
@@ -43,8 +96,11 @@ services:
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
-    ports:
-      - "9696:9696"
+    container_name: feed-my-potato-prowlarr
+    network_mode: service:gluetun
+    depends_on:
+      gluetun:
+        condition: service_healthy
     volumes:
       - ./prowlarr-config:/config
     environment:
@@ -55,14 +111,14 @@ services:
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
-    ports:
-      - "8080:8080"
-      - "16881:16881"
-      - "16881:16881/udp"
+    container_name: feed-my-potato-qbittorrent
+    network_mode: service:gluetun
+    depends_on:
+      gluetun:
+        condition: service_healthy
     volumes:
       - ./qbittorrent-config:/config
-      - /mnt/e/PlexMedia:/media/plex
-      - /mnt/e/PlexMedia/downloads:/downloads
+      - /mnt/data/media/downloads:/downloads
     environment:
       - PUID=1000
       - PGID=1000
@@ -70,24 +126,17 @@ services:
       - WEBUI_PORT=8080
     restart: unless-stopped
 
-  jellyfin:
-    image: jellyfin/jellyfin:latest
-    ports:
-      - "8096:8096"
-    volumes:
-      - ./jellyfin-config:/config
-      - ./jellyfin-cache:/cache
-      - /mnt/e/PlexMedia:/media/plex:ro
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: feed-my-potato-flaresolverr
+    network_mode: service:gluetun
+    depends_on:
+      gluetun:
+        condition: service_healthy
     environment:
-      - PUID=1000
-      - PGID=1000
       - TZ=Europe/Rome
     restart: unless-stopped
 
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    ports:
-      - "8191:8191"
-    environment:
-      - TZ=Europe/Rome
-    restart: unless-stopped
+networks:
+  proxy:
+    external: true
