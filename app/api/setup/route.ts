@@ -101,6 +101,37 @@ export async function POST() {
         })
         results[service].pathMapping = status === 201 ? 'configured' : `status ${status}`
       }
+
+      // --- Webhook for Jellyfin scan on import ---
+      const { data: notifications } = await arrFetch(service, '/notification')
+      const notifList = Array.isArray(notifications) ? notifications : []
+      const hasWebhook = notifList.some(
+        (n: { implementation?: string; name?: string }) =>
+          n.implementation === 'Webhook' && n.name === 'Jellyfin Scan',
+      )
+
+      if (hasWebhook) {
+        results[service].webhook = 'already configured'
+      } else {
+        const { status } = await arrFetch(service, '/notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Jellyfin Scan',
+            implementation: 'Webhook',
+            configContract: 'WebhookSettings',
+            onDownload: true,
+            onImportComplete: true,
+            onUpgrade: true,
+            fields: [
+              { name: 'url', value: 'http://feed-my-potato:3000/api/webhook' },
+              { name: 'method', value: 1 },
+            ],
+            tags: [],
+          }),
+        })
+        results[service].webhook = status === 201 ? 'configured' : `status ${status}`
+      }
     } catch (err) {
       results[service].error = err instanceof Error ? err.message : String(err)
     }

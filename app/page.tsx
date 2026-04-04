@@ -9,6 +9,7 @@ interface HealthStatus {
   radarr: boolean
   sonarr: boolean
   prowlarr: boolean
+  bazarr: boolean
   qbittorrent: boolean
 }
 
@@ -187,7 +188,7 @@ export default function DashboardPage() {
           icon={Activity}
           label="Servizi"
           value={healthyCount}
-          suffix="/4"
+          suffix={`/${health ? Object.keys(health).length : 0}`}
           gradient="from-amber-500/20 to-amber-600/5"
           iconColor="text-amber-400"
           borderColor="border-amber-500/20"

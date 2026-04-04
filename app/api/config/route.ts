@@ -25,6 +25,7 @@ export async function PUT(req: Request) {
     !('radarr' in body) ||
     !('sonarr' in body) ||
     !('prowlarr' in body) ||
+    !('bazarr' in body) ||
     !('qbittorrent' in body)
   ) {
     return NextResponse.json({ error: 'Invalid config shape' }, { status: 400 })

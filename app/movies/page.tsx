@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Film, MoreVertical, EyeOff, Trash2, AlertTriangle } from 'lucide-react'
+import { Film, MoreVertical, EyeOff, Trash2, AlertTriangle, Languages } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Movie {
@@ -10,6 +10,12 @@ interface Movie {
   monitored: boolean
   hasFile: boolean
   images: { coverType: string; remoteUrl: string }[]
+}
+
+interface BazarrMovie {
+  radarrId: number
+  subtitles: { name: string; code2: string; path: string | null }[]
+  missing_subtitles: { name: string; code2: string }[]
 }
 
 type Filter = 'all' | 'monitored' | 'missing' | 'downloaded'
@@ -23,6 +29,7 @@ const FILTER_LABELS: Record<Filter, string> = {
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([])
+  const [bazarrMovies, setBazarrMovies] = useState<BazarrMovie[]>([])
   const [filter, setFilter] = useState<Filter>('all')
   const [loading, setLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState<number | null>(null)
@@ -30,12 +37,13 @@ export default function MoviesPage() {
   const [deleteFiles, setDeleteFiles] = useState(true)
 
   useEffect(() => {
-    fetch('/api/radarr/movie')
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) setMovies(data)
-      })
-      .finally(() => setLoading(false))
+    Promise.all([
+      fetch('/api/radarr/movie').then(r => r.json()),
+      fetch('/api/bazarr/movies').then(r => r.json()).catch(() => []),
+    ]).then(([movieData, subData]) => {
+      if (Array.isArray(movieData)) setMovies(movieData)
+      if (Array.isArray(subData)) setBazarrMovies(subData)
+    }).finally(() => setLoading(false))
   }, [])
 
   const filtered = movies.filter(m => {
@@ -181,21 +189,43 @@ export default function MoviesPage() {
                 <p className="text-sm font-semibold truncate text-white">{movie.title}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-xs text-slate-500">{movie.year}</span>
-                  <span
-                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                      movie.hasFile
-                        ? 'bg-emerald-500/15 text-emerald-400'
+                  <div className="flex items-center gap-1.5">
+                    {(() => {
+                      const bm = bazarrMovies.find(b => b.radarrId === movie.id)
+                      const subLangs = bm?.subtitles?.filter(s => s.path).map(s => s.code2.toUpperCase()) ?? []
+                      if (movie.hasFile && subLangs.length > 0) {
+                        return (
+                          <span className="flex items-center gap-0.5 text-[10px] text-emerald-400" title={`Sottotitoli: ${subLangs.join(', ')}`}>
+                            <Languages size={11} />
+                            {subLangs.join(', ')}
+                          </span>
+                        )
+                      }
+                      if (movie.hasFile) {
+                        return (
+                          <span className="text-slate-600" title="Nessun sottotitolo">
+                            <Languages size={11} />
+                          </span>
+                        )
+                      }
+                      return null
+                    })()}
+                    <span
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                        movie.hasFile
+                          ? 'bg-emerald-500/15 text-emerald-400'
+                          : movie.monitored
+                            ? 'bg-amber-500/15 text-amber-400'
+                            : 'bg-white/[0.06] text-slate-500'
+                      }`}
+                    >
+                      {movie.hasFile
+                        ? 'Scaricato'
                         : movie.monitored
-                          ? 'bg-amber-500/15 text-amber-400'
-                          : 'bg-white/[0.06] text-slate-500'
-                    }`}
-                  >
-                    {movie.hasFile
-                      ? 'Scaricato'
-                      : movie.monitored
-                        ? 'Mancante'
-                        : 'Non monitorato'}
-                  </span>
+                          ? 'Mancante'
+                          : 'Non monitorato'}
+                    </span>
+                  </div>
                 </div>
               </div>
 

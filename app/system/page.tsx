@@ -6,6 +6,7 @@ interface Config {
   radarr: { url: string; apiKey: string }
   sonarr: { url: string; apiKey: string }
   prowlarr: { url: string; apiKey: string }
+  bazarr: { url: string; apiKey: string }
   qbittorrent: { url: string; username: string; password: string }
 }
 
@@ -13,6 +14,7 @@ interface HealthStatus {
   radarr: boolean
   sonarr: boolean
   prowlarr: boolean
+  bazarr: boolean
   qbittorrent: boolean
 }
 
@@ -58,8 +60,8 @@ export default function SystemPage() {
     )
   }
 
-  const arrServices = ['radarr', 'sonarr', 'prowlarr'] as const
-  const portMap = { radarr: '7878', sonarr: '8989', prowlarr: '9696' }
+  const arrServices = ['radarr', 'sonarr', 'prowlarr', 'bazarr'] as const
+  const portMap = { radarr: '7878', sonarr: '8989', prowlarr: '9696', bazarr: '6767' }
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -74,7 +76,7 @@ export default function SystemPage() {
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
             Stato Servizi
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {Object.entries(health).map(([name, ok]) => (
               <div
                 key={name}

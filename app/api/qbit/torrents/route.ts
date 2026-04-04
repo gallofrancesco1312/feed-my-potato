@@ -14,7 +14,8 @@ async function makeClient() {
 export async function GET() {
   try {
     const client = await makeClient()
-    const torrents = await client.getTorrents()
+    const all = await client.getTorrents()
+    const torrents = all.filter(t => t.state !== 'missingFiles')
     return NextResponse.json(torrents)
   } catch (err) {
     return NextResponse.json(

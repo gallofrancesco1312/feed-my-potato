@@ -21,7 +21,8 @@ export async function GET() {
 
       while (true) {
         try {
-          const torrents = await client.getTorrents()
+          const all = await client.getTorrents()
+          const torrents = all.filter(t => t.state !== 'missingFiles')
           send(torrents)
         } catch {
           send({ error: 'qBittorrent non raggiungibile' })

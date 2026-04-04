@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Tv, ChevronDown, ChevronRight, EyeOff, Trash2, AlertTriangle } from 'lucide-react'
+import { Tv, ChevronDown, ChevronRight, EyeOff, Trash2, AlertTriangle, Languages } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Series {
@@ -22,11 +22,26 @@ interface Episode {
   monitored: boolean
 }
 
+interface BazarrSubtitle {
+  name: string
+  code2: string
+  path: string | null
+}
+
+interface BazarrEpisode {
+  sonarrEpisodeId: number
+  season: number
+  episode: number
+  subtitles: BazarrSubtitle[]
+  missing_subtitles: BazarrSubtitle[]
+}
+
 export default function SeriesPage() {
   const [series, setSeries] = useState<Series[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<number | null>(null)
   const [episodes, setEpisodes] = useState<Episode[]>([])
+  const [bazarrEpisodes, setBazarrEpisodes] = useState<BazarrEpisode[]>([])
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
   const [deleteFiles, setDeleteFiles] = useState(true)
 
@@ -52,8 +67,12 @@ export default function SeriesPage() {
       return
     }
     setExpanded(id)
-    const data = await fetch(`/api/sonarr/episode?seriesId=${id}`).then(r => r.json())
-    if (Array.isArray(data)) setEpisodes(data)
+    const [epData, subData] = await Promise.all([
+      fetch(`/api/sonarr/episode?seriesId=${id}`).then(r => r.json()),
+      fetch(`/api/bazarr/episodes?seriesId=${id}`).then(r => r.json()).catch(() => []),
+    ])
+    if (Array.isArray(epData)) setEpisodes(epData)
+    if (Array.isArray(subData)) setBazarrEpisodes(subData)
   }
 
   const unmonitor = async (e: React.MouseEvent, id: number) => {
@@ -252,22 +271,42 @@ export default function SeriesPage() {
                   {episodes.filter(ep => ep.hasFile).length === 0 ? (
                     <p className="text-sm text-slate-600">Nessun episodio scaricato.</p>
                   ) : (
-                    episodes.filter(ep => ep.hasFile).map(ep => (
-                      <div key={ep.id} className="flex items-center gap-3 text-sm py-1.5 px-2 -mx-2 rounded-lg group/ep hover:bg-white/[0.04] transition-colors">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                        <span className="text-slate-400 tabular-nums text-xs">
-                          S{String(ep.seasonNumber).padStart(2, '0')}E
-                          {String(ep.episodeNumber).padStart(2, '0')}
-                        </span>
-                        <button
-                          onClick={() => deleteEpisodeFile(ep)}
-                          className="ml-auto p-1.5 rounded-md hover:bg-red-500/15 text-slate-600 hover:text-red-400 opacity-0 group-hover/ep:opacity-100 transition-all cursor-pointer"
-                          title="Elimina file episodio"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    ))
+                    episodes.filter(ep => ep.hasFile).map(ep => {
+                      const bazarrEp = bazarrEpisodes.find(
+                        b => b.season === ep.seasonNumber && b.episode === ep.episodeNumber,
+                      )
+                      const hasExternalSubs = bazarrEp?.subtitles.some(s => s.path) ?? false
+                      const subLangs = bazarrEp?.subtitles
+                        .filter(s => s.path)
+                        .map(s => s.code2.toUpperCase()) ?? []
+
+                      return (
+                        <div key={ep.id} className="flex items-center gap-3 text-sm py-1.5 px-2 -mx-2 rounded-lg group/ep hover:bg-white/[0.04] transition-colors">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                          <span className="text-slate-400 tabular-nums text-xs">
+                            S{String(ep.seasonNumber).padStart(2, '0')}E
+                            {String(ep.episodeNumber).padStart(2, '0')}
+                          </span>
+                          {hasExternalSubs ? (
+                            <span className="flex items-center gap-1 text-[10px] text-emerald-400" title={`Sottotitoli: ${subLangs.join(', ')}`}>
+                              <Languages size={12} />
+                              {subLangs.join(', ')}
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-[10px] text-slate-600" title="Nessun sottotitolo">
+                              <Languages size={12} />
+                            </span>
+                          )}
+                          <button
+                            onClick={() => deleteEpisodeFile(ep)}
+                            className="ml-auto p-1.5 rounded-md hover:bg-red-500/15 text-slate-600 hover:text-red-400 opacity-0 group-hover/ep:opacity-100 transition-all cursor-pointer"
+                            title="Elimina file episodio"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )
+                    })
                   )}
                 </div>
               )}

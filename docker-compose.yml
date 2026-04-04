@@ -21,7 +21,7 @@ services:
       # FlareSolverr
       - "8191:8191"
     volumes:
-      - ./gluetun-config:/gluetun
+      - gluetun-config:/gluetun
     environment:
       - VPN_SERVICE_PROVIDER=nordvpn
       - VPN_TYPE=wireguard
@@ -29,6 +29,8 @@ services:
       - SERVER_COUNTRIES=Italy
       - FIREWALL=on
       - FIREWALL_VPN_INPUT_PORTS=16881
+      - FIREWALL_INPUT_PORTS=8989,7878
+      - FIREWALL_OUTBOUND_SUBNETS=172.16.0.0/12
       - TZ=Europe/Rome
     restart: unless-stopped
     networks:
@@ -46,11 +48,16 @@ services:
     container_name: feed-my-potato
     volumes:
       - ./config.json:/app/config.json
+      - sonarr-config:/service-config/sonarr:ro
+      - radarr-config:/service-config/radarr:ro
+      - prowlarr-config:/service-config/prowlarr:ro
+      - bazarr-config:/service-config/bazarr:ro
     depends_on:
       - radarr
       - sonarr
       - prowlarr
       - qbittorrent
+      - bazarr
     restart: unless-stopped
     networks:
       - proxy
@@ -70,7 +77,7 @@ services:
       gluetun:
         condition: service_healthy
     volumes:
-      - ./radarr-config:/config
+      - radarr-config:/config
       - /mnt/data/media:/data
     environment:
       - PUID=1000
@@ -86,7 +93,7 @@ services:
       gluetun:
         condition: service_healthy
     volumes:
-      - ./sonarr-config:/config
+      - sonarr-config:/config
       - /mnt/data/media:/data
     environment:
       - PUID=1000
@@ -102,7 +109,7 @@ services:
       gluetun:
         condition: service_healthy
     volumes:
-      - ./prowlarr-config:/config
+      - prowlarr-config:/config
     environment:
       - PUID=1000
       - PGID=1000
@@ -117,7 +124,7 @@ services:
       gluetun:
         condition: service_healthy
     volumes:
-      - ./qbittorrent-config:/config
+      - qbittorrent-config:/config
       - /mnt/data/media/downloads:/downloads
     environment:
       - PUID=1000
@@ -136,8 +143,8 @@ services:
     environment:
       - TZ=Europe/Rome
     volumes:
-      - ./jellyfin-config:/config
-      - ./jellyfin-cache:/cache
+      - jellyfin-config:/config
+      - jellyfin-cache:/cache
       - /mnt/data/media/movies:/media/movies:ro
       - /mnt/data/media/series:/media/series:ro
     networks:
@@ -150,6 +157,30 @@ services:
       - "traefik.http.routers.jellyfin.tls=true"
       - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
 
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: feed-my-potato-bazarr
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    volumes:
+      - bazarr-config:/config
+      - /mnt/data/media:/data
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+    restart: unless-stopped
+    networks:
+      - proxy
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bazarr.rule=Host(`bazarr.home.potato`)"
+      - "traefik.http.routers.bazarr.entrypoints=websecure"
+      - "traefik.http.routers.bazarr.tls=true"
+      - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
+
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: feed-my-potato-flaresolverr
@@ -160,6 +191,16 @@ services:
     environment:
       - TZ=Europe/Rome
     restart: unless-stopped
+
+volumes:
+  gluetun-config:
+  sonarr-config:
+  radarr-config:
+  prowlarr-config:
+  qbittorrent-config:
+  jellyfin-config:
+  bazarr-config:
+  jellyfin-cache:
 
 networks:
   proxy:
