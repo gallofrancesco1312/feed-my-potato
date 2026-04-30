@@ -78,7 +78,7 @@ services:
         condition: service_healthy
     volumes:
       - radarr-config:/config
-      - /mnt/data/media:/data
+      - /mnt/hdd1/media:/data
     environment:
       - PUID=1000
       - PGID=1000
@@ -94,7 +94,7 @@ services:
         condition: service_healthy
     volumes:
       - sonarr-config:/config
-      - /mnt/data/media:/data
+      - /mnt/hdd1/media:/data
     environment:
       - PUID=1000
       - PGID=1000
@@ -125,7 +125,7 @@ services:
         condition: service_healthy
     volumes:
       - qbittorrent-config:/config
-      - /mnt/data/media/downloads:/downloads
+      - /mnt/hdd1/media/downloads:/downloads
     environment:
       - PUID=1000
       - PGID=1000
@@ -133,29 +133,31 @@ services:
       - WEBUI_PORT=8080
     restart: unless-stopped
 
-  jellyfin:
-    image: jellyfin/jellyfin:latest
-    container_name: feed-my-potato-jellyfin
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: feed-my-potato-plex
     restart: unless-stopped
     dns:
       - 1.1.1.1
       - 8.8.8.8
     environment:
+      - PUID=1000
+      - PGID=1000
       - TZ=Europe/Rome
+      - VERSION=docker
     volumes:
-      - jellyfin-config:/config
-      - jellyfin-cache:/cache
-      - /mnt/data/media/movies:/media/movies:ro
-      - /mnt/data/media/series:/media/series:ro
+      - plex-config:/config
+      - /mnt/hdd1/media/movies:/media/movies:ro
+      - /mnt/hdd1/media/series:/media/series:ro
     networks:
       - proxy
       - default
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.home.potato`)"
-      - "traefik.http.routers.jellyfin.entrypoints=websecure"
-      - "traefik.http.routers.jellyfin.tls=true"
-      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      - "traefik.http.routers.plex.rule=Host(`plex.home.potato`)"
+      - "traefik.http.routers.plex.entrypoints=websecure"
+      - "traefik.http.routers.plex.tls=true"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
 
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
@@ -165,7 +167,7 @@ services:
       - 8.8.8.8
     volumes:
       - bazarr-config:/config
-      - /mnt/data/media:/data
+      - /mnt/hdd1/media:/data
     environment:
       - PUID=1000
       - PGID=1000
@@ -198,9 +200,8 @@ volumes:
   radarr-config:
   prowlarr-config:
   qbittorrent-config:
-  jellyfin-config:
+  plex-config:
   bazarr-config:
-  jellyfin-cache:
 
 networks:
   proxy:
