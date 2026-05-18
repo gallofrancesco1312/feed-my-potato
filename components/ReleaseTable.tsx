@@ -185,7 +185,7 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
         </div>
       </div>
       <div className="overflow-x-auto">
-        <Table>
+        <Table className="min-w-[700px]">
         <TableHeader>
           <TableRow className="border-white/[0.06] hover:bg-transparent">
             <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Nome</TableHead>
@@ -193,7 +193,7 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
               <span className="flex items-center gap-1">Qualit&agrave; <SortIcon field="quality" /></span>
             </TableHead>
             <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Lingua</TableHead>
-            <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Indexer</TableHead>
+            <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Indexer</TableHead>
             <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none" onClick={() => toggleSort('age')}>
               <span className="flex items-center gap-1">Et&agrave; <SortIcon field="age" /></span>
             </TableHead>
@@ -203,7 +203,7 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
             <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none" onClick={() => toggleSort('seeders')}>
               <span className="flex items-center gap-1">Seed <SortIcon field="seeders" /></span>
             </TableHead>
-            <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none" onClick={() => toggleSort('leechers')}>
+            <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none hidden sm:table-cell" onClick={() => toggleSort('leechers')}>
               <span className="flex items-center gap-1">Leech <SortIcon field="leechers" /></span>
             </TableHead>
             <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider w-10">Azione</TableHead>
@@ -223,11 +223,11 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
               <TableCell className="text-xs text-slate-400">
                 {effectiveLanguages(release).join(', ') || '\u2014'}
               </TableCell>
-              <TableCell className="text-xs text-slate-500">{release.indexer}</TableCell>
+              <TableCell className="text-xs text-slate-500 hidden sm:table-cell">{release.indexer}</TableCell>
               <TableCell className="text-xs text-slate-400 tabular-nums">{formatAge(release.age)}</TableCell>
               <TableCell className="text-xs text-slate-400 tabular-nums">{formatSize(release.size)}</TableCell>
               <TableCell className="text-xs font-semibold text-emerald-400 tabular-nums">{release.seeders}</TableCell>
-              <TableCell className="text-xs text-red-400 tabular-nums">{release.leechers}</TableCell>
+              <TableCell className="text-xs text-red-400 tabular-nums hidden sm:table-cell">{release.leechers}</TableCell>
               <TableCell>
                 {release.downloadUrl ? (
                   <Button
