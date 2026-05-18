@@ -42,6 +42,33 @@ function formatAge(days: number): string {
   return `${(days / 365).toFixed(1)}a`
 }
 
+function parseResolution(title: string): string {
+  if (/\b(2160p|4K|UHD)\b/i.test(title)) return '4K'
+  if (/\b1080p\b/i.test(title)) return '1080p'
+  if (/\b720p\b/i.test(title)) return '720p'
+  if (/\b480p\b/i.test(title)) return '480p'
+  return ''
+}
+
+function parseLanguage(title: string): string[] {
+  const langs: string[] = []
+  if (/\b(MULTI|DUAL)\b/i.test(title)) return ['ITA', 'ENG']
+  if (/\bITA(LIAN)?\b/i.test(title)) langs.push('ITA')
+  if (/\bENG(LISH)?\b/i.test(title)) langs.push('ENG')
+  return langs
+}
+
+function effectiveResolution(release: Release): string {
+  return release.quality?.quality.name || parseResolution(release.title)
+}
+
+function effectiveLanguages(release: Release): string[] {
+  if (release.languages && release.languages.length > 0) {
+    return release.languages.map(l => l.name)
+  }
+  return parseLanguage(release.title)
+}
+
 interface ReleaseTableProps {
   releases: Release[]
   onGrab: (guid: string, indexerId: number) => Promise<void>
