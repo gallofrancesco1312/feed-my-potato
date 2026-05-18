@@ -30,6 +30,8 @@ export interface Release {
 type SortField = 'seeders' | 'leechers' | 'size' | 'age' | 'quality'
 type SortDir = 'asc' | 'desc'
 
+const RESOLUTION_RANK: Record<string, number> = { '4K': 4, '1080p': 3, '720p': 2, '480p': 1 }
+
 function formatSize(bytes: number): string {
   if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`
   if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(0)} MB`
@@ -111,8 +113,8 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
     let va: number | string
     let vb: number | string
     if (sortField === 'quality') {
-      va = effectiveResolution(a)
-      vb = effectiveResolution(b)
+      va = RESOLUTION_RANK[effectiveResolution(a)] ?? 0
+      vb = RESOLUTION_RANK[effectiveResolution(b)] ?? 0
     } else {
       va = a[sortField]
       vb = b[sortField]
