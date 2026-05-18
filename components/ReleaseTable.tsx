@@ -79,6 +79,16 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [grabbing, setGrabbing] = useState<string | null>(null)
   const [grabbed, setGrabbed] = useState<Set<string>>(new Set())
+  const [resFilter, setResFilter] = useState<string>('Tutte')
+  const [langFilter, setLangFilter] = useState<string>('Tutte')
+
+  const availableResolutions = ['Tutte', ...Array.from(
+    new Set(releases.map(r => effectiveResolution(r)).filter(Boolean))
+  ).sort()]
+
+  const availableLanguages = ['Tutte', ...Array.from(
+    new Set(releases.flatMap(r => effectiveLanguages(r)))
+  ).sort()]
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -89,12 +99,20 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
     }
   }
 
-  const sorted = [...releases].sort((a, b) => {
+  const filtered = releases.filter(r => {
+    const res = effectiveResolution(r)
+    const langs = effectiveLanguages(r)
+    if (resFilter !== 'Tutte' && res !== resFilter) return false
+    if (langFilter !== 'Tutte' && !langs.includes(langFilter)) return false
+    return true
+  })
+
+  const sorted = [...filtered].sort((a, b) => {
     let va: number | string
     let vb: number | string
     if (sortField === 'quality') {
-      va = a.quality?.quality.name ?? ''
-      vb = b.quality?.quality.name ?? ''
+      va = effectiveResolution(a)
+      vb = effectiveResolution(b)
     } else {
       va = a[sortField]
       vb = b[sortField]
