@@ -152,6 +152,8 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
           {availableResolutions.map(res => (
             <button
               key={res}
+              type="button"
+              aria-pressed={resFilter === res}
               onClick={() => setResFilter(res)}
               className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full border transition-colors ${
                 resFilter === res
@@ -168,6 +170,8 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
           {availableLanguages.map(lang => (
             <button
               key={lang}
+              type="button"
+              aria-pressed={langFilter === lang}
               onClick={() => setLangFilter(lang)}
               className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full border transition-colors ${
                 langFilter === lang
