@@ -15,6 +15,7 @@ interface LookupResult {
   remotePoster?: string
   tmdbId?: number
   tvdbId?: number
+  imdbId?: string
   id?: number
   type: 'movie' | 'series'
   seasons?: { seasonNumber: number; monitored?: boolean }[]

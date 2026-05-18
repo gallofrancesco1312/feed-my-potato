@@ -145,21 +145,27 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
               <TableCell className="text-xs font-semibold text-emerald-400 tabular-nums">{release.seeders}</TableCell>
               <TableCell className="text-xs text-red-400 tabular-nums">{release.leechers}</TableCell>
               <TableCell>
-                <Button
-                  size="icon-xs"
-                  variant="ghost"
-                  onClick={() => handleGrab(release)}
-                  disabled={grabbing === release.guid || grabbed.has(release.guid)}
-                  className="cursor-pointer hover:bg-white/[0.06]"
-                >
-                  {grabbed.has(release.guid) ? (
-                    <Check size={14} className="text-emerald-400" />
-                  ) : grabbing === release.guid ? (
-                    <Loader2 size={14} className="animate-spin text-violet-400" />
-                  ) : (
-                    <Download size={14} className="text-slate-400" />
-                  )}
-                </Button>
+                {release.downloadUrl ? (
+                  <Button
+                    size="icon-xs"
+                    variant="ghost"
+                    onClick={() => handleGrab(release)}
+                    disabled={grabbing === release.guid || grabbed.has(release.guid)}
+                    className="cursor-pointer hover:bg-white/[0.06]"
+                  >
+                    {grabbed.has(release.guid) ? (
+                      <Check size={14} className="text-emerald-400" />
+                    ) : grabbing === release.guid ? (
+                      <Loader2 size={14} className="animate-spin text-violet-400" />
+                    ) : (
+                      <Download size={14} className="text-slate-400" />
+                    )}
+                  </Button>
+                ) : (
+                  <span title="Nessun link disponibile">
+                    <Download size={14} className="text-slate-700" />
+                  </span>
+                )}
               </TableCell>
             </TableRow>
           ))}

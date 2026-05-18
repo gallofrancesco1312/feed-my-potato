@@ -1,6 +1,21 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+
+const STOPWORDS = new Set(['the', 'a', 'an', 'of', 'in', 'on', 'at', 'to', 'for', 'and', 'or', 'is', 'it', 'il', 'la', 'le', 'lo', 'di', 'da', 'del', 'della', 'dei'])
+
+function keywords(title: string): string[] {
+  return title
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !STOPWORDS.has(w))
+}
+
+function filterByTitle(releases: Release[], title: string): Release[] {
+  const kws = keywords(title)
+  if (kws.length === 0) return releases
+  return releases.filter(r => kws.every(kw => r.title.toLowerCase().includes(kw)))
+}
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ReleaseTable, type Release } from '@/components/ReleaseTable'
@@ -17,6 +32,7 @@ interface LookupResult {
   remotePoster?: string
   tmdbId?: number
   tvdbId?: number
+  imdbId?: string
   id?: number
   type: 'movie' | 'series'
   seasons?: Season[]
@@ -63,9 +79,9 @@ export function SearchResultCard({ item, isExpanded, onToggle }: SearchResultCar
       const loadingToastId = toast.loading('Ricerca torrent in corso...')
       try {
         const query = item.year ? `${item.title} ${item.year}` : item.title
-        const res = await fetch(`/api/prowlarr/search?query=${encodeURIComponent(query)}`)
+        const res = await fetch(`/api/prowlarr/search?query=${encodeURIComponent(query)}&type=movie`)
         const data = await res.json()
-        if (Array.isArray(data)) setReleases(data)
+        if (Array.isArray(data)) setReleases(filterByTitle(data, item.title))
         else toast.error('Errore nella ricerca torrent')
       } catch (err) {
         toast.error(`Errore nella ricerca torrent: ${err instanceof Error ? err.message : 'sconosciuto'}`)
@@ -92,9 +108,9 @@ export function SearchResultCard({ item, isExpanded, onToggle }: SearchResultCar
     try {
       const pad = String(seasonNum).padStart(2, '0')
       const query = `${item.title} S${pad}`
-      const res = await fetch(`/api/prowlarr/search?query=${encodeURIComponent(query)}`)
+      const res = await fetch(`/api/prowlarr/search?query=${encodeURIComponent(query)}&type=tvsearch`)
       const data = await res.json()
-      if (Array.isArray(data)) setSeasonReleases(data)
+      if (Array.isArray(data)) setSeasonReleases(filterByTitle(data, item.title))
       else toast.error('Errore nella ricerca torrent')
     } catch (err) {
       toast.error(`Errore nella ricerca torrent: ${err instanceof Error ? err.message : 'sconosciuto'}`)
@@ -123,7 +139,7 @@ export function SearchResultCard({ item, isExpanded, onToggle }: SearchResultCar
 
     // Push release through Sonarr/Radarr so they manage the download lifecycle
     const endpoint = item.type === 'movie'
-      ? '/api/radarr/release'
+      ? '/api/radarr/release/push'
       : '/api/sonarr/release/push'
     const res = await fetch(endpoint, {
       method: 'POST',
