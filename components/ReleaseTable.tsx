@@ -87,7 +87,7 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
   ).sort()]
 
   const availableLanguages = ['Tutte', ...Array.from(
-    new Set(releases.flatMap(r => effectiveLanguages(r)))
+    new Set(releases.flatMap(r => effectiveLanguages(r)).filter(Boolean))
   ).sort()]
 
   const toggleSort = (field: SortField) => {
