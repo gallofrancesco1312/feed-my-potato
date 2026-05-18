@@ -145,8 +145,43 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-x-4 gap-y-2 px-1">
+        <div className="flex flex-wrap gap-1.5 items-center">
+          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mr-1">Qualità</span>
+          {availableResolutions.map(res => (
+            <button
+              key={res}
+              onClick={() => setResFilter(res)}
+              className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full border transition-colors ${
+                resFilter === res
+                  ? 'bg-violet-500/20 text-violet-400 border-violet-500/30'
+                  : 'bg-white/[0.04] text-slate-400 border-white/[0.08] hover:bg-white/[0.08]'
+              }`}
+            >
+              {res}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-1.5 items-center">
+          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mr-1">Lingua</span>
+          {availableLanguages.map(lang => (
+            <button
+              key={lang}
+              onClick={() => setLangFilter(lang)}
+              className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full border transition-colors ${
+                langFilter === lang
+                  ? 'bg-violet-500/20 text-violet-400 border-violet-500/30'
+                  : 'bg-white/[0.04] text-slate-400 border-white/[0.08] hover:bg-white/[0.08]'
+              }`}
+            >
+              {lang}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <Table>
         <TableHeader>
           <TableRow className="border-white/[0.06] hover:bg-transparent">
             <TableHead className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Nome</TableHead>
@@ -215,7 +250,8 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
             </TableRow>
           ))}
         </TableBody>
-      </Table>
+        </Table>
+      </div>
     </div>
   )
 }
