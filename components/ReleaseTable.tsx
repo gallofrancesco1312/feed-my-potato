@@ -212,16 +212,16 @@ export function ReleaseTable({ releases, onGrab }: ReleaseTableProps) {
         <TableBody>
           {sorted.map(release => (
             <TableRow key={release.guid} className="border-white/[0.04] hover:bg-white/[0.02] transition-colors">
-              <TableCell className="text-xs max-w-[300px] truncate text-slate-300" title={release.title}>
+              <TableCell className="text-xs min-w-[220px] max-w-[400px] break-words whitespace-normal leading-snug text-slate-300" title={release.title}>
                 {release.title}
               </TableCell>
               <TableCell>
                 <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/[0.06] text-slate-400">
-                  {release.quality?.quality.name ?? '—'}
+                  {effectiveResolution(release) || '—'}
                 </span>
               </TableCell>
               <TableCell className="text-xs text-slate-400">
-                {release.languages?.map(l => l.name).join(', ') || '\u2014'}
+                {effectiveLanguages(release).join(', ') || '\u2014'}
               </TableCell>
               <TableCell className="text-xs text-slate-500">{release.indexer}</TableCell>
               <TableCell className="text-xs text-slate-400 tabular-nums">{formatAge(release.age)}</TableCell>
