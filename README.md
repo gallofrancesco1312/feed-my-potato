@@ -8,6 +8,22 @@ Web app per cercare, scaricare e gestire contenuti multimediali direttamente nel
 
 ---
 
+## Screenshots
+
+| Dashboard | Calendario |
+|:---------:|:----------:|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Calendario](docs/screenshots/calendar.png) |
+
+| Serie | Film |
+|:-----:|:----:|
+| ![Serie](docs/screenshots/series.png) | ![Film](docs/screenshots/movies.png) |
+
+| Ricerca |
+|:-------:|
+| ![Ricerca](docs/screenshots/search.png) |
+
+---
+
 ## Come funziona
 
 ```
