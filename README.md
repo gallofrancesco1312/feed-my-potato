@@ -27,14 +27,20 @@ Web app per cercare, scaricare e gestire contenuti multimediali direttamente nel
 ## Come funziona
 
 ```
-Browser → FeedMyPotato (Next.js) → Jackett → Torrent indexers
-                                → qBittorrent → /media/plex ← Plex
+Browser → FeedMyPotato (Next.js)
+               ├── Sonarr  ──┐
+               ├── Radarr  ──┤── Prowlarr → indexer
+               ├── Prowlarr  │
+               ├── Bazarr    └── qBittorrent (via Gluetun VPN)
+               └── qBittorrent        ↓
+                                /mnt/media ← Plex
 ```
 
-1. Cerchi un film o serie su FeedMyPotato
-2. Jackett interroga tutti gli indexer configurati e restituisce i risultati ordinati per seed
-3. Scegli il torrent e lo invii direttamente a qBittorrent
-4. Il download viene salvato nella cartella Plex — Plex lo rileva automaticamente
+1. Cerchi un film o una serie su FeedMyPotato
+2. Il contenuto viene aggiunto a Sonarr o Radarr che cercano il miglior release tramite Prowlarr
+3. Il torrent viene inviato a qBittorrent, che scarica tramite VPN (Gluetun)
+4. Il file viene salvato nella cartella media — Plex lo rileva automaticamente
+5. Bazarr scarica i sottotitoli in automatico
 
 ---
 
@@ -42,10 +48,15 @@ Browser → FeedMyPotato (Next.js) → Jackett → Torrent indexers
 
 | Componente | Ruolo |
 |---|---|
-| **Next.js 15** | Frontend + API routes (App Router) |
-| **Jackett** | Aggregatore di torrent indexer |
+| **Next.js 15** | Frontend + API proxy (App Router) |
+| **Sonarr** | Gestione e automazione serie TV |
+| **Radarr** | Gestione e automazione film |
+| **Prowlarr** | Aggregatore indexer torrent |
 | **qBittorrent** | Client torrent con WebUI/API |
+| **Bazarr** | Download automatico sottotitoli |
+| **Plex** | Media server |
 | **FlareSolverr** | Bypass Cloudflare per indexer protetti |
+| **Gluetun** | VPN gateway (NordVPN WireGuard) |
 
 ---
 
@@ -54,6 +65,7 @@ Browser → FeedMyPotato (Next.js) → Jackett → Torrent indexers
 ### Prerequisiti
 
 - Docker e Docker Compose
+- Account NordVPN con chiave WireGuard (o altro provider supportato da Gluetun)
 - Una libreria Plex esistente su disco
 
 ### 1. Clona il repo
@@ -63,55 +75,71 @@ git clone https://github.com/gallofrancesco1312/feed-my-potato.git
 cd feed-my-potato
 ```
 
-### 2. Crea il file di configurazione
+### 2. Configura le variabili d'ambiente
+
+Crea un file `.env` nella root del progetto:
+
+```env
+NORDVPN_PRIVATE_KEY=your_wireguard_private_key
+```
+
+> La chiave WireGuard si recupera dal pannello NordVPN → **Manual Setup → WireGuard**.
+
+### 3. Crea il file di configurazione app
 
 Crea `config.json` nella root del progetto:
 
 ```json
 {
-  "plexFolder": "/media/plex",
-  "jackett": {
-    "url": "http://jackett:9117",
-    "apiKey": ""
-  },
-  "qbittorrent": {
-    "url": "http://qbittorrent:8080",
-    "username": "admin",
-    "password": ""
-  }
+  "sonarr": { "url": "http://feed-my-potato-sonarr:8989", "apiKey": "" },
+  "radarr": { "url": "http://feed-my-potato-radarr:7878", "apiKey": "" },
+  "prowlarr": { "url": "http://feed-my-potato-prowlarr:9696", "apiKey": "" },
+  "bazarr": { "url": "http://feed-my-potato-bazarr:6767", "apiKey": "" },
+  "qbittorrent": { "url": "http://localhost:8080", "username": "admin", "password": "" }
 }
 ```
 
-> La `apiKey` di Jackett e la password di qBittorrent si impostano dopo il primo avvio dalla pagina **Impostazioni**.
+> Le API key vengono lette automaticamente dai file di configurazione dei servizi se monti i volumi come da `docker-compose.yml`. Il `config.json` è opzionale.
 
-### 3. Adatta i volumi in `docker-compose.yml`
+### 4. Adatta i percorsi media in `docker-compose.yml`
+
+Sostituisci `/mnt/hdd1/media` con il percorso della tua libreria:
 
 ```yaml
 volumes:
-  - /percorso/tua/libreria/plex:/media/plex
+  - /percorso/tua/libreria:/data
 ```
 
-### 4. Avvia i container
+### 5. Sostituisci i placeholder
+
+Nel `docker-compose.yml` sostituisci:
+
+| Placeholder | Valore |
+|---|---|
+| `YOUR_REGISTRY` | Registry Docker da cui pullare l'immagine |
+| `YOUR_DOMAIN` | Il tuo dominio (es. `home.example.com`) |
+
+### 6. Avvia i container
 
 ```bash
 docker compose up -d
 ```
 
-### 5. Configura Jackett
+### 7. Setup automatico
 
-1. Apri [http://localhost:9117](http://localhost:9117)
+Una volta che tutti i servizi sono online, chiama l'endpoint di setup per configurare automaticamente Sonarr e Radarr (root folder, qBittorrent come download client, remote path mapping):
+
+```bash
+curl -X POST http://localhost:3000/api/setup
+```
+
+### 8. Configura Prowlarr
+
+1. Apri Prowlarr su [http://localhost:9696](http://localhost:9696)
 2. Aggiungi gli indexer che vuoi usare
-3. Copia la **API Key** dalla dashboard
-4. Incollala in FeedMyPotato → **Impostazioni**
+3. In **Settings → Apps** aggiungi Sonarr e Radarr — Prowlarr li sincronizzerà automaticamente
 
-### 6. Configura qBittorrent
-
-1. Apri [http://localhost:8080](http://localhost:8080) (credenziali default: `admin` / password generata al primo avvio — vedi log del container)
-2. Cambia la password nelle impostazioni di qBittorrent
-3. Inserisci le credenziali in FeedMyPotato → **Impostazioni**
-4. Imposta la cartella di download su `/media/plex`
-
-### 7. Apri FeedMyPotato
+### 9. Apri FeedMyPotato
 
 [http://localhost:3000](http://localhost:3000)
 
@@ -121,29 +149,31 @@ docker compose up -d
 
 | Pagina | Percorso | Descrizione |
 |---|---|---|
-| **Cerca** | `/search` | Ricerca torrent via Jackett, risultati ordinati per seed |
+| **Dashboard** | `/` | Statistiche libreria, spazio disco, salute servizi, prossime uscite, download attivi |
+| **Serie** | `/series` | Libreria serie TV gestita da Sonarr |
+| **Film** | `/movies` | Libreria film gestita da Radarr |
+| **Calendario** | `/calendar` | Prossime uscite da Sonarr e Radarr |
+| **Cerca** | `/search` | Ricerca e aggiunta di film e serie a Sonarr/Radarr |
 | **Download** | `/downloads` | Monitoraggio download attivi in tempo reale (SSE) |
-| **Libreria** | `/library` | File nella cartella Plex con possibilità di eliminazione |
-| **Impostazioni** | `/settings` | Configurazione URL, credenziali e test connessione |
+| **Cronologia** | `/history` | Storico download da Sonarr e Radarr |
+| **Indexer** | `/indexers` | Stato e gestione indexer Prowlarr |
+| **Sistema** | `/system` | Health check aggregato di tutti i servizi |
 
 ---
 
-## API Routes
+## Porte esposte
 
-| Metodo | Endpoint | Descrizione |
-|---|---|---|
-| `GET` | `/api/search?q=...` | Cerca torrent su Jackett |
-| `GET` | `/api/torrents` | Lista torrent attivi in qBittorrent |
-| `POST` | `/api/torrents` | Aggiunge un torrent (magnet o URL) |
-| `PATCH` | `/api/torrents` | Pausa / riprende un torrent |
-| `DELETE` | `/api/torrents` | Rimuove un torrent |
-| `GET` | `/api/stream` | Stream SSE progresso download |
-| `GET` | `/api/library` | Lista file nella libreria Plex |
-| `DELETE` | `/api/library` | Elimina un file dalla libreria |
-| `GET` | `/api/config` | Legge la configurazione |
-| `PUT` | `/api/config` | Salva la configurazione |
-| `GET` | `/api/test/jackett` | Testa la connessione a Jackett |
-| `GET` | `/api/test/qbittorrent` | Testa la connessione a qBittorrent |
+| Servizio | Porta |
+|---|---|
+| FeedMyPotato | `3000` |
+| qBittorrent WebUI | `8080` |
+| Radarr | `7878` |
+| Sonarr | `8989` |
+| Prowlarr | `9696` |
+| FlareSolverr | `8191` |
+| qBittorrent (traffico torrent) | `16881` |
+
+> Radarr, Sonarr, Prowlarr e qBittorrent girano all'interno della rete VPN Gluetun. Il traffico torrent esce esclusivamente tramite VPN.
 
 ---
 
@@ -169,25 +199,13 @@ npm test
 ```
 feed-my-potato/
 ├── app/
-│   ├── api/          # Route handler Next.js
-│   ├── search/       # Pagina ricerca
-│   ├── downloads/    # Pagina download
-│   ├── library/      # Pagina libreria
-│   └── settings/     # Pagina impostazioni
-├── components/       # Componenti React (Sidebar, tabelle, ecc.)
-├── lib/              # Logica server (Jackett, qBittorrent, config, libreria)
+│   ├── api/          # Proxy verso Sonarr, Radarr, Prowlarr, qBit, Bazarr
+│   ├── (pagine)/     # calendar, downloads, history, indexers, movies, search, series, system
+│   └── page.tsx      # Dashboard
+├── components/       # Componenti React (sidebar, tabelle, grafici)
+├── lib/              # Config, client arr, utility
+├── docs/
+│   └── screenshots/  # Screenshot dell'interfaccia
 ├── Dockerfile
 └── docker-compose.yml
 ```
-
----
-
-## Porte esposte
-
-| Servizio | Porta |
-|---|---|
-| FeedMyPotato | `3000` |
-| qBittorrent WebUI | `8080` |
-| Jackett | `9117` |
-| FlareSolverr | `8191` |
-| qBittorrent (torrent) | `16881` |
