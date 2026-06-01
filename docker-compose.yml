@@ -47,7 +47,7 @@ services:
       start_period: 30s
 
   app:
-    image: forgejo.home.potato/ciccio/feed-my-potato:latest
+    image: YOUR_REGISTRY/feed-my-potato:latest
     container_name: feed-my-potato
     volumes:
       - ./config.json:/app/config.json
@@ -67,7 +67,7 @@ services:
       - default
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.feedmypotato.rule=Host(`feedmypotato.home.potato`)"
+      - "traefik.http.routers.feedmypotato.rule=Host(`feedmypotato.YOUR_DOMAIN`)"
       - "traefik.http.routers.feedmypotato.entrypoints=websecure"
       - "traefik.http.routers.feedmypotato.tls=true"
       - "traefik.http.services.feedmypotato.loadbalancer.server.port=3000"
@@ -158,7 +158,7 @@ services:
       - default
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.plex.rule=Host(`plex.home.potato`)"
+      - "traefik.http.routers.plex.rule=Host(`plex.YOUR_DOMAIN`)"
       - "traefik.http.routers.plex.entrypoints=websecure"
       - "traefik.http.routers.plex.tls=true"
       - "traefik.http.services.plex.loadbalancer.server.port=32400"
@@ -182,7 +182,7 @@ services:
       - default
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.bazarr.rule=Host(`bazarr.home.potato`)"
+      - "traefik.http.routers.bazarr.rule=Host(`bazarr.YOUR_DOMAIN`)"
       - "traefik.http.routers.bazarr.entrypoints=websecure"
       - "traefik.http.routers.bazarr.tls=true"
       - "traefik.http.services.bazarr.loadbalancer.server.port=6767"

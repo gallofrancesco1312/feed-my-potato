@@ -12,18 +12,12 @@ export interface QBittorrentConfig {
   password: string
 }
 
-export interface JellyfinConfig {
-  url: string
-  apiKey: string
-}
-
 export interface AppConfig {
   radarr: ServiceConfig
   sonarr: ServiceConfig
   prowlarr: ServiceConfig
   bazarr: ServiceConfig
   qbittorrent: QBittorrentConfig
-  jellyfin: JellyfinConfig
 }
 
 export const defaultConfig: AppConfig = {
@@ -32,7 +26,6 @@ export const defaultConfig: AppConfig = {
   prowlarr: { url: 'http://localhost:9696', apiKey: '' },
   bazarr: { url: 'http://feed-my-potato-bazarr:6767', apiKey: '' },
   qbittorrent: { url: 'http://localhost:8080', username: 'admin', password: '' },
-  jellyfin: { url: 'http://feed-my-potato-jellyfin:8096', apiKey: '' },
 }
 
 const CONFIG_PATH = process.env.CONFIG_PATH ?? './config.json'
@@ -85,7 +78,6 @@ export async function readConfig(filePath = CONFIG_PATH): Promise<AppConfig> {
     prowlarr: { ...defaultConfig.prowlarr, ...((parsed.prowlarr as Record<string, unknown>) ?? {}) } as ServiceConfig,
     bazarr: { ...defaultConfig.bazarr, ...((parsed.bazarr as Record<string, unknown>) ?? {}) } as ServiceConfig,
     qbittorrent: { ...defaultConfig.qbittorrent, ...((parsed.qbittorrent as Record<string, unknown>) ?? {}) } as QBittorrentConfig,
-    jellyfin: { ...defaultConfig.jellyfin, ...((parsed.jellyfin as Record<string, unknown>) ?? {}) } as JellyfinConfig,
   }
 
   // Auto-discover API keys from mounted config.xml files (overrides config.json)
